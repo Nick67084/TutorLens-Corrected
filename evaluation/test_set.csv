@@ -1,0 +1,4 @@
+question,reference_answer,rubric,student_answer,human_points
+Why does gradient descent need a learning rate?,The learning rate sets how big each update step is. Too small makes learning slow; too large can overshoot the minimum.,Learning rate is the size of each step | Used when updating the weights | Too small: learning is slow | Too large: overshoots the minimum,It controls how big each step is when we update the weights.,2
+What is overfitting?,"Overfitting is when a model learns the training data too closely, including noise, so it performs badly on new data.",Model fits training data too closely | Performs badly on new data,The model memorizes the training set and then fails on data it has not seen.,2
+What is overfitting?,"Overfitting is when a model learns the training data too closely, including noise, so it performs badly on new data.",Model fits training data too closely | Performs badly on new data,It is when the model is too slow.,0

@@ -1,0 +1,12 @@
+streamlit
+pymupdf
+pydantic
+sentence-transformers
+chromadb
+sqlalchemy
+ollama
+python-dotenv
+pandas
+scikit-learn
+scipy
+pytest
