@@ -27,12 +27,12 @@ TEACHING_MODES = {
 
     "Simple Explanation": (
         "Explain the concept using beginner-friendly language. "
-        "Define technical terms and use simple illustrative examples."
+        "Define technical terms and use simple illustrative examples. Do not include code unless explicitly requested."
     ),
 
     "Detailed Lesson": (
         "Provide a structured university-level lesson with definitions, "
-        "detailed explanations, examples, and key takeaways."
+        "detailed explanations, examples, and key takeaways. Use distinct headings: Concept, How it works, Example, Key takeaway."
     ),
 
    "Step-by-Step Solution": (
@@ -46,7 +46,7 @@ TEACHING_MODES = {
 
     "Revision Summary": (
         "Create organized revision notes. Highlight key concepts, "
-        "important definitions, formulas, and essential facts."
+        "important definitions, formulas, and essential facts. Use compact bullets; cover the breadth of available evidence."
     ),
 
     "Code Explanation": (
@@ -58,7 +58,7 @@ TEACHING_MODES = {
     "Socratic Tutor": (
         "Guide the student using hints and focused questions. "
         "Do not immediately reveal the complete solution. "
-        "Encourage the student to reason independently."
+        "Encourage the student to reason independently. Start with one brief PDF-grounded hint with a citation, then ask exactly one focused question and stop. Do not give the complete answer or a lecture, even if the length is Detailed. After a student attempt, give feedback and the next hint."
     ),
 }
 
@@ -239,6 +239,14 @@ def retrieve(
     if limit <= 0:
         return []
 
+    if re.search(r"\b(summarize|summarise|revision summary|key concepts)\b", question, re.I) and re.search(r"\b(lecture|document|pdf|course material)\b", question, re.I):
+        chunks = vector_store.get_all_chunks(doc_id)
+        if chunks:
+            # Evenly sample the document for a whole-document overview.
+            chunks = sorted(chunks, key=lambda c: (c["page"], c["chunk_index"]))
+            indices = sorted({round(i * (len(chunks)-1) / max(1, limit-1)) for i in range(limit)})
+            return [Source(chunks[i]["page"], chunks[i]["section"], chunks[i]["text"]) for i in indices]
+
     contextual_query = build_retrieval_query(
         question,
         history,
@@ -288,7 +296,7 @@ def retrieve(
             )
 
             keyword_match = (
-                keyword_coverage >= 0.30
+                keyword_coverage >= 0.20
             )
 
             if not semantic_match and not keyword_match:
@@ -346,7 +354,29 @@ def retrieve(
         if len(sources) >= limit:
             break
 
-    return sources
+    # Reserve room for nearby pages and distributed evidence, without crossing
+    # document boundaries. Neighbours are context, not proof of relevance.
+    all_chunks = vector_store.get_all_chunks(doc_id)
+    if not sources:
+        return []
+    primary = sources[:max(1, limit - 3)]
+    seen = {(s.page, s.text) for s in primary}
+    nearby = {s.page + offset for s in primary[:4] for offset in (-1, 1)}
+    terms = set(vector_store.tokenize(contextual_query))
+    def neighbor_score(c):
+        return len(terms & set(vector_store.tokenize(c["text"])))
+    neighbors = sorted((c for c in all_chunks if c["page"] in nearby), key=neighbor_score, reverse=True)
+    for c in neighbors:
+        if len(primary) >= limit - 1: break
+        if (c["page"], c["text"]) in seen: continue
+        primary.append(Source(c["page"], c["section"], c["text"], 0.0))
+        seen.add((c["page"], c["text"]))
+    for source in sources:
+        if len(primary) >= limit: break
+        if (source.page, source.text) not in seen:
+            primary.append(source)
+            seen.add((source.page, source.text))
+    return primary
 
 
 
@@ -491,7 +521,7 @@ def build_answer_messages(
         max_messages=6,
         max_chars=3000,
     )
-    if is_follow_up(question)
+    if is_follow_up(question) or mode == "Socratic Tutor"
     else []
 )
     # Avoid repeating the current question if it is already in history.

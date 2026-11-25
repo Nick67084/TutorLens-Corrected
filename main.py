@@ -43,9 +43,39 @@ with st.sidebar:
     st.markdown("### AI system")
 
     if ok:
-        st.success("AI engine connected")
+        st.markdown(
+            """
+            <div style="
+                background-color: #114949;
+                border: 1px solid #10746D;
+                border-radius: 10px;
+                padding: 12px 16px;
+                color: #FFFFFF;
+                font-weight: 500;
+            ">
+                <span style="color: #86EFAC;">●</span>
+                &nbsp; AI engine connected
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
     else:
-        st.error("AI engine offline")
+        st.markdown(
+            """
+            <div style="
+                background-color: #542D35;
+                border: 1px solid #EF4444;
+                border-radius: 10px;
+                padding: 12px 16px;
+                color: #FFFFFF;
+                font-weight: 500;
+            ">
+                <span style="color: #FCA5A5;">●</span>
+                &nbsp; AI engine offline
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     st.caption(
         f"Model: {config.OLLAMA_MODEL or 'Not configured'}"

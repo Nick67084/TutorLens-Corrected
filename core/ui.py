@@ -110,6 +110,29 @@ def apply_theme() -> None:
     border-color: #FFFFFF !important;
 }
 
+        /* Sidebar download buttons share the same accessible teal theme. */
+        [data-testid="stSidebar"] .stDownloadButton button,
+        [data-testid="stSidebar"] [data-testid="stDownloadButton"] button {
+            background-color: #10746D !important;
+            border: 1px solid #B9DFD9 !important;
+            color: #FFFFFF !important;
+            border-radius: 9px;
+        }
+        [data-testid="stSidebar"] .stDownloadButton button *,
+        [data-testid="stSidebar"] [data-testid="stDownloadButton"] button * {
+            color: #FFFFFF !important;
+        }
+        [data-testid="stSidebar"] .stDownloadButton button:hover:not(:disabled),
+        [data-testid="stSidebar"] [data-testid="stDownloadButton"] button:hover:not(:disabled) {
+            background-color: #195653 !important;
+            border-color: #FFFFFF !important;
+        }
+        [data-testid="stSidebar"] .stDownloadButton button:disabled,
+        [data-testid="stSidebar"] [data-testid="stDownloadButton"] button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
         .tl-brand {
             padding: 12px 0 18px 0;
             border-bottom: 1px solid #40706C;
@@ -579,7 +602,12 @@ def sidebar_student() -> int:
         "Student ID: " + account["login_id"]
     )
 
-    st.sidebar.success("Signed in")
+    st.sidebar.markdown(
+        '<div style="background:#114949;border:1px solid #10746D;'
+        'border-radius:10px;padding:12px 16px;color:#FFFFFF;">'
+        '<span style="color:#86EFAC;">●</span> &nbsp; Signed in</div>',
+        unsafe_allow_html=True,
+    )
 
     if st.sidebar.button(
         "Log out",
